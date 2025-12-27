@@ -8,6 +8,7 @@ class MaintenanceTeam(models.Model):
         related_name='teams',
         limit_choices_to={'role': 'TECHNICIAN'}
     )
+    company = models.ForeignKey('authx.Company', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

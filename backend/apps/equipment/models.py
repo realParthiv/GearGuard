@@ -20,6 +20,7 @@ class Equipment(models.Model):
         limit_choices_to={'role': 'TECHNICIAN'}
     )
     
+    company = models.ForeignKey('authx.Company', on_delete=models.CASCADE, null=True, blank=True)
     is_scrapped = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import MaintenanceRequestViewSet
 
 router = DefaultRouter()
-router.register(r'', MaintenanceRequestViewSet)
+router.register(r'', MaintenanceRequestViewSet, basename='maintenancerequest')
 
 urlpatterns = [
     path('', include(router.urls)),

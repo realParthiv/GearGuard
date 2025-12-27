@@ -34,6 +34,7 @@ class MaintenanceRequest(models.Model):
     
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     
+    company = models.ForeignKey('authx.Company', on_delete=models.CASCADE, null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_requests')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
