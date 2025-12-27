@@ -1,62 +1,46 @@
 # GearGuard Backend
 
-## Setup Instructions
+This is the central API for the GearGuard platform, built with **Django REST Framework** and **MySQL**.
+
+## 🚀 Quick Start
 
 1.  **Environment Setup**:
-    *   Navigate to `backend/`.
-    *   Create a `.env` file from `env.example`:
-        ```bash
-        cp env.example .env
-        ```
-    *   Edit `.env` and add your MySQL database credentials (DB_NAME, DB_USER, DB_PASSWORD, etc.).
-    *   Ensure MySQL is running and the database `gearguard` exists.
+    *   Create a `.env` file from `env.example`.
+    *   Configure your MySQL credentials.
+    *   Ensure a database exists (e.g., `gearguard`).
 
-2.  **Install Dependencies**:
+2.  **Initialize Database**:
     ```bash
     pip install -r requirements.txt
-    ```
-
-3.  **Run Migrations**:
-    ```bash
-    python manage.py makemigrations apps.authx apps.teams apps.equipment apps.maintenance
     python manage.py migrate
+    python seed_all.py
     ```
 
-4.  **Create Superuser** (Admin):
-    ```bash
-    python manage.py createsuperuser
-    ```
-
-5.  **Run Server**:
+3.  **Run Server**:
     ```bash
     python manage.py runserver
     ```
 
-## API Documentation
+## 🛠️ Automation Scripts
 
-### Authentication
-*   `POST /auth/register/` - Register new user.
-*   `POST /auth/login/` - Login (Returns JWT).
-*   `GET /auth/me/` - Get current user profile.
-*   `POST /auth/logout/` - Logout (Blacklist token).
+We've provided powerful scripts to manage your development environment:
 
-### Maintenance Teams
-*   `GET /teams/` - List teams.
-*   `POST /teams/` - Create team (Admin/Manager).
+- **`wipe_db.py`**: Completely clears the database and resets all Primary Key IDs back to 1.
+- **`seed_all.py`**: Populates the database with a high-quality multi-company dataset (Adani Ports & GearGuard Corp).
+- **`manage.py migrate`**: Standard Django command to create/update tables.
 
-### Equipment
-*   `GET /equipment/` - List equipment (with `open_request_count`).
-*   `POST /equipment/` - Add equipment.
-*   `GET /equipment/{id}/maintenance-requests/` - History.
+## 🎭 API Suite Overview
 
-### Maintenance Requests
-*   `GET /maintenance/` - List all requests.
-*   `POST /maintenance/` - Create request (Auto-fills team/tech).
-*   `GET /maintenance/kanban/` - Kanban board view.
-*   `GET /maintenance/calendar/` - Calendar view (Preventive).
+### Auth & Employees
+- `POST /auth/register/`: Register a new Company + Owner.
+- `POST /auth/login/`: Role-aware login (Returns User object + JWT).
+- `/auth/managers/`: CRUD for Manager accounts (Owner only).
+- `/auth/employees/`: CRUD for Technicians and standard Users.
 
-## Project Structure
-*   `apps/authx`: Custom User model & Auth.
-*   `apps/teams`: Maintenance Teams.
-*   `apps/equipment`: Asset Management.
-*   `apps/maintenance`: Requests, Kanban, Signals.
+### Maintenance & Equipment
+- `/equipment/`: Machinery management with open task counters.
+- `/maintenance/`: Primary ticket lifecycle (Kanban, Calendar, Assignments).
+- `/maintenance/stats/`: Dashboard analytics.
+
+---
+For detailed cURL examples and payloads, refer to the **[API Blueprint](file:///C:/Users/PARTHIV/.gemini/antigravity/brain/4979fc70-8b6e-4418-b02c-f542b57c4e04/roles_and_flows.md)**.
