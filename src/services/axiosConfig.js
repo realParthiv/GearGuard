@@ -6,6 +6,7 @@ const axiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   },
 });
 
@@ -16,6 +17,14 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    console.log("------------------------------");
+    console.log("API Request Debug:");
+    console.log("Base URL:", config.baseURL);
+    console.log("Headers:", config.headers);
+    console.log("Token:", token);
+    console.log("------------------------------");
+
     return config;
   },
   (error) => {
@@ -23,8 +32,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle Errors (e.g., 401)
-// Response Interceptor: Handle Errors (e.g., 401)
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {

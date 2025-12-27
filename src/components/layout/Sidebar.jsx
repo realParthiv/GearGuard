@@ -8,6 +8,8 @@ import {
   Calendar,
   KanbanSquare,
   LogOut,
+  Users,
+  UserCog,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -17,8 +19,21 @@ const Sidebar = () => {
   const links = [
     {
       to: "/company-dashboard",
-      label: "Company Dashboard",
+      label: "Overview",
       icon: LayoutDashboard,
+      roles: ["COMPANY_OWNER"],
+      end: true, // Exact match for root path
+    },
+    {
+      to: "/company-dashboard/managers",
+      label: "Managers",
+      icon: Users,
+      roles: ["COMPANY_OWNER"],
+    },
+    {
+      to: "/company-dashboard/employees",
+      label: "Employees",
+      icon: UserCog,
       roles: ["COMPANY_OWNER"],
     },
     {
@@ -83,6 +98,7 @@ const Sidebar = () => {
           <NavLink
             key={link.to}
             to={link.to}
+            end={link.end}
             className={({ isActive }) =>
               clsx(
                 "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group",

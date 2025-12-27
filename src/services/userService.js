@@ -11,6 +11,15 @@ const userService = {
     }
   },
 
+  getEmployees: async () => {
+    try {
+      const response = await axiosInstance.get(ENDPOINTS.AUTH.EMPLOYEES);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   createManager: async (data) => {
     try {
       const payload = {
