@@ -1,0 +1,1090 @@
+openapi: 3.0.3
+info:
+  title: GearGuard API
+  version: 1.0.0
+  description: API for GearGuard Maintenance Management System
+paths:
+  /auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /equipment/:
+    get:
+      operationId: equipment_list
+      tags:
+      - equipment
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Equipment'
+          description: ''
+    post:
+      operationId: equipment_create
+      tags:
+      - equipment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+          description: ''
+  /equipment/{id}/:
+    get:
+      operationId: equipment_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this equipment.
+        required: true
+      tags:
+      - equipment
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+          description: ''
+    put:
+      operationId: equipment_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this equipment.
+        required: true
+      tags:
+      - equipment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+          description: ''
+    patch:
+      operationId: equipment_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this equipment.
+        required: true
+      tags:
+      - equipment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEquipmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEquipmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEquipmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+          description: ''
+    delete:
+      operationId: equipment_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this equipment.
+        required: true
+      tags:
+      - equipment
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /equipment/{id}/maintenance-requests/:
+    get:
+      operationId: equipment_maintenance_requests_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this equipment.
+        required: true
+      tags:
+      - equipment
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+          description: ''
+  /maintenance/:
+    get:
+      operationId: maintenance_list
+      tags:
+      - maintenance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+    post:
+      operationId: maintenance_create
+      tags:
+      - maintenance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+  /maintenance/{id}/:
+    get:
+      operationId: maintenance_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance request.
+        required: true
+      tags:
+      - maintenance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+    put:
+      operationId: maintenance_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance request.
+        required: true
+      tags:
+      - maintenance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+    patch:
+      operationId: maintenance_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance request.
+        required: true
+      tags:
+      - maintenance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMaintenanceRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMaintenanceRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMaintenanceRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+    delete:
+      operationId: maintenance_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance request.
+        required: true
+      tags:
+      - maintenance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /maintenance/calendar/:
+    get:
+      operationId: maintenance_calendar_retrieve
+      description: Return Preventive requests for Calendar.
+      tags:
+      - maintenance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+  /maintenance/kanban/:
+    get:
+      operationId: maintenance_kanban_retrieve
+      description: Return grouped requests for Kanban board.
+      tags:
+      - maintenance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRequest'
+          description: ''
+  /teams/:
+    get:
+      operationId: teams_list
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceTeam'
+          description: ''
+    post:
+      operationId: teams_create
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTeamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTeamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTeamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTeam'
+          description: ''
+  /teams/{id}/:
+    get:
+      operationId: teams_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance team.
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTeam'
+          description: ''
+    put:
+      operationId: teams_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance team.
+        required: true
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTeamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTeamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTeamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTeam'
+          description: ''
+    patch:
+      operationId: teams_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance team.
+        required: true
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMaintenanceTeamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMaintenanceTeamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMaintenanceTeamRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTeam'
+          description: ''
+    delete:
+      operationId: teams_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this maintenance team.
+        required: true
+      tags:
+      - teams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Equipment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        maintenance_team_details:
+          allOf:
+          - $ref: '#/components/schemas/MaintenanceTeam'
+          readOnly: true
+        default_technician_details:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        open_request_count:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        serial_number:
+          type: string
+          maxLength: 100
+        department:
+          type: string
+          maxLength: 100
+        assigned_employee:
+          type: string
+          nullable: true
+          maxLength: 255
+        purchase_date:
+          type: string
+          format: date
+          nullable: true
+        warranty_expiry_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          maxLength: 255
+        is_scrapped:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        maintenance_team:
+          type: integer
+        default_technician:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - default_technician_details
+      - department
+      - id
+      - location
+      - maintenance_team
+      - maintenance_team_details
+      - name
+      - open_request_count
+      - serial_number
+    EquipmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        serial_number:
+          type: string
+          minLength: 1
+          maxLength: 100
+        department:
+          type: string
+          minLength: 1
+          maxLength: 100
+        assigned_employee:
+          type: string
+          nullable: true
+          maxLength: 255
+        purchase_date:
+          type: string
+          format: date
+          nullable: true
+        warranty_expiry_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          minLength: 1
+          maxLength: 255
+        is_scrapped:
+          type: boolean
+        maintenance_team:
+          type: integer
+        default_technician:
+          type: integer
+          nullable: true
+      required:
+      - department
+      - location
+      - maintenance_team
+      - name
+      - serial_number
+    MaintenanceRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        equipment_details:
+          allOf:
+          - $ref: '#/components/schemas/Equipment'
+          readOnly: true
+        maintenance_team_details:
+          allOf:
+          - $ref: '#/components/schemas/MaintenanceTeam'
+          readOnly: true
+        assigned_technician_details:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        created_by_details:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        request_type:
+          $ref: '#/components/schemas/RequestTypeEnum'
+        subject:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        duration_hours:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        equipment:
+          type: integer
+        maintenance_team:
+          type: integer
+          nullable: true
+        assigned_technician:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          readOnly: true
+      required:
+      - assigned_technician_details
+      - created_at
+      - created_by
+      - created_by_details
+      - description
+      - equipment
+      - equipment_details
+      - id
+      - maintenance_team_details
+      - subject
+      - updated_at
+    MaintenanceRequestRequest:
+      type: object
+      properties:
+        request_type:
+          $ref: '#/components/schemas/RequestTypeEnum'
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        duration_hours:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        equipment:
+          type: integer
+        maintenance_team:
+          type: integer
+          nullable: true
+        assigned_technician:
+          type: integer
+          nullable: true
+      required:
+      - description
+      - equipment
+      - subject
+    MaintenanceTeam:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        members:
+          type: array
+          items:
+            type: integer
+        members_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - members
+      - members_details
+      - name
+    MaintenanceTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        members:
+          type: array
+          items:
+            type: integer
+      required:
+      - members
+      - name
+    PatchedEquipmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        serial_number:
+          type: string
+          minLength: 1
+          maxLength: 100
+        department:
+          type: string
+          minLength: 1
+          maxLength: 100
+        assigned_employee:
+          type: string
+          nullable: true
+          maxLength: 255
+        purchase_date:
+          type: string
+          format: date
+          nullable: true
+        warranty_expiry_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          minLength: 1
+          maxLength: 255
+        is_scrapped:
+          type: boolean
+        maintenance_team:
+          type: integer
+        default_technician:
+          type: integer
+          nullable: true
+    PatchedMaintenanceRequestRequest:
+      type: object
+      properties:
+        request_type:
+          $ref: '#/components/schemas/RequestTypeEnum'
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        duration_hours:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        equipment:
+          type: integer
+        maintenance_team:
+          type: integer
+          nullable: true
+        assigned_technician:
+          type: integer
+          nullable: true
+    PatchedMaintenanceTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        members:
+          type: array
+          items:
+            type: integer
+    Register:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - full_name
+    RegisterRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - full_name
+      - password
+    RequestTypeEnum:
+      enum:
+      - CORRECTIVE
+      - PREVENTIVE
+      type: string
+      description: |-
+        * `CORRECTIVE` - Corrective (Breakdown)
+        * `PREVENTIVE` - Preventive (Routine)
+    RoleEnum:
+      enum:
+      - ADMIN
+      - MANAGER
+      - TECHNICIAN
+      - USER
+      type: string
+      description: |-
+        * `ADMIN` - Admin
+        * `MANAGER` - Manager
+        * `TECHNICIAN` - Technician
+        * `USER` - User
+    StatusEnum:
+      enum:
+      - NEW
+      - IN_PROGRESS
+      - REPAIRED
+      - SCRAP
+      type: string
+      description: |-
+        * `NEW` - New
+        * `IN_PROGRESS` - In Progress
+        * `REPAIRED` - Repaired
+        * `SCRAP` - Scrap
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - full_name
+      - id
+      - is_active
+    UserRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - full_name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+- url: https://50b59bf0b1b9.ngrok-free.app
+  description: Ngrok Server
