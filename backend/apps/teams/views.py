@@ -7,4 +7,8 @@ class MaintenanceTeamViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceTeamSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-    # Optional: Restrict creation to ADMIN/MANAGER if strict permissions needed
+    def get_queryset(self):
+        return MaintenanceTeam.objects.filter(company=self.request.user.company)
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)

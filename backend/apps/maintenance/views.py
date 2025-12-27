@@ -6,9 +6,14 @@ from .models import MaintenanceRequest
 from .serializers import MaintenanceRequestSerializer
 
 class MaintenanceRequestViewSet(viewsets.ModelViewSet):
-    queryset = MaintenanceRequest.objects.all().order_by('-created_at')
     serializer_class = MaintenanceRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return MaintenanceRequest.objects.filter(company=self.request.user.company).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)
 
     # Permission Logic:
     # - ADMIN/MANAGER can create anything.

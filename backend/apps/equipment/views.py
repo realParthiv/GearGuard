@@ -12,12 +12,15 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Annotate with count of open (not REPAIRED or SCRAP) requests
-        return Equipment.objects.annotate(
+        return Equipment.objects.filter(company=self.request.user.company).annotate(
             open_request_count=Count(
                 'maintenancerequest', 
                 filter=Q(maintenancerequest__status__in=['NEW', 'IN_PROGRESS'])
             )
         )
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)
 
     @action(detail=True, methods=['get'], url_path='maintenance-requests')
     def maintenance_requests(self, request, pk=None):
