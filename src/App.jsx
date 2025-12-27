@@ -49,7 +49,7 @@ function App() {
             <Route element={<DashboardLayout />}>
               <Route path="/" element={<DashboardHome />} />
               <Route
-                path="/company-dashboard"
+                path="/company-dashboard/*"
                 element={<CompanyOwnerDashboard />}
               />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
