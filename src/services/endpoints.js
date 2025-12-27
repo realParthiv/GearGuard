@@ -13,6 +13,7 @@ export const ENDPOINTS = {
     DETAIL: (id) => `/equipment/${id}/`,
   },
   MAINTENANCE: {
+    CREATE_REQUEST: "/maintenance/",
     LIST: "/maintenance/requests/",
     STATS: "/maintenance/stats/",
     DETAIL: (id) => `/maintenance/requests/${id}/`,

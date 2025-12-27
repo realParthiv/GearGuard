@@ -61,7 +61,6 @@ const userService = {
 
   deleteManager: async (id) => {
     try {
-      // User specified that delete endpoint is /auth/employees/{id}/
       const response = await axiosInstance.delete(
         `${ENDPOINTS.AUTH.EMPLOYEES}${id}/`
       );
