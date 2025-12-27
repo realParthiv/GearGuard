@@ -24,15 +24,33 @@ const TechnicianDashboard = () => {
     try {
       // Use the new my_tasks endpoint
       const tasks = await api.maintenance.getMyTasks();
+      console.log("Raw API response:", tasks);
 
-      // Filter for tasks assigned to the current user and not yet repaired/scrapped
-      const userTasks = tasks.filter(
-        (r) =>
-          r.assignedTo === (user.full_name || user.name) &&
-          !["REPAIRED", "SCRAP"].includes(r.status)
+      // Map backend field names to frontend expected format
+      const mappedTasks = tasks.map(task => ({
+        ...task,
+        // Map nested object fields to flat fields for easier access
+        equipmentName: task.equipment_details?.name || "Unknown Equipment",
+        assignedTo: task.assigned_technician_details?.full_name ||
+          task.assigned_technician_details?.email ||
+          "Unassigned",
+        reportedBy: task.created_by_details?.full_name ||
+          task.created_by_details?.email ||
+          "Unknown",
+        createdDate: task.created_at ? task.created_at.split('T')[0] : null,
+        type: task.request_type || "CORRECTIVE",
+        priority: task.priority || "MEDIUM",
+      }));
+
+      console.log("Mapped tasks:", mappedTasks);
+
+      // Filter out completed/scrapped tasks
+      const activeTasks = mappedTasks.filter(
+        (r) => !["REPAIRED", "SCRAP"].includes(r.status)
       );
 
-      setMyTasks(userTasks);
+      console.log("Active tasks:", activeTasks);
+      setMyTasks(activeTasks);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
     } finally {

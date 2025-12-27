@@ -34,16 +34,19 @@ const api = {
     },
     getKanban: async () => {
       const response = await axiosInstance.get("/maintenance/kanban/");
+      console.log(response.data);
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getMyTasks: async () => {
-      await delay(500);
-      return [...REQUESTS]; // Mock data for technician tasks
+      const response = await axiosInstance.get("/maintenance/my_tasks/");
+      console.log(response.data);
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getCalendar: async (start, end) => {
       // Assuming the backend filters by date range or returns all. 
       // For now, fetching all and client-side filtering logic might be applied where used.
-      const response = await axiosInstance.get("/maintenance/"); 
+      const response = await axiosInstance.get("/maintenance/");
+
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
   },
@@ -59,12 +62,12 @@ const api = {
   },
   employees: {
     create: async (data) => {
-        console.log(data);
+      console.log(data);
       const response = await axiosInstance.post("/auth/employees/", data);
       return response.data;
     },
     getAll: async () => { // Assuming an endpoint exists to list employees for team creation
-      const response = await axiosInstance.get("/auth/employees/"); 
+      const response = await axiosInstance.get("/auth/employees/");
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     }
   }
