@@ -78,3 +78,4 @@ logs/
 
 wipe_db.py
 seed.py
+seed_all.py
