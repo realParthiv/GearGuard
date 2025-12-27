@@ -1,159 +1,69 @@
-import axios from "axios";
-
-// --- MOCK DATA ---
-
-const EQUIPMENT = [
-  {
-    id: 1,
-    name: "Hydraulic Press X1",
-    status: "OPERATIONAL",
-    location: "Floor 1",
-    lastMaintenance: "2023-10-15",
-    image:
-      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    id: 2,
-    name: "CNC Milling Machine",
-    status: "MAINTENANCE",
-    location: "Floor 2",
-    lastMaintenance: "2023-11-01",
-    image:
-      "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    id: 3,
-    name: "Conveyor Belt System",
-    status: "OPERATIONAL",
-    location: "Warehouse",
-    lastMaintenance: "2023-09-20",
-    image:
-      "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    id: 4,
-    name: "Industrial Robot Arm",
-    status: "SCRAP",
-    location: "Storage",
-    lastMaintenance: "2023-01-10",
-    image:
-      "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=300&q=80",
-  },
-];
-
-const REQUESTS = [
-  {
-    id: 101,
-    equipmentId: 2,
-    equipmentName: "CNC Milling Machine",
-    subject: "Vibration issue",
-    description: "Strange noise during operation",
-    status: "IN_PROGRESS",
-    priority: "HIGH",
-    type: "CORRECTIVE",
-    reportedBy: "Regular User",
-    assignedTo: "Tech User",
-    createdDate: "2023-11-10",
-  },
-  {
-    id: 102,
-    equipmentId: 1,
-    equipmentName: "Hydraulic Press X1",
-    subject: "Monthly Checkup",
-    description: "Routine inspection",
-    status: "NEW",
-    priority: "MEDIUM",
-    type: "PREVENTIVE",
-    reportedBy: "Manager User",
-    assignedTo: null,
-    createdDate: "2023-11-12",
-    scheduledDate: "2023-11-15",
-  },
-  {
-    id: 103,
-    equipmentId: 3,
-    equipmentName: "Conveyor Belt System",
-    subject: "Belt misalignment",
-    description: "Belt slipping off track",
-    status: "REPAIRED",
-    priority: "CRITICAL",
-    type: "CORRECTIVE",
-    reportedBy: "Regular User",
-    assignedTo: "Tech User",
-    createdDate: "2023-11-05",
-    completedDate: "2023-11-06",
-  },
-];
-
-// --- API SERVICE ---
-
-// Simulate network delay
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import axiosInstance from "./axiosConfig";
 
 const api = {
   equipment: {
     getAll: async () => {
-      await delay(500);
-      return [...EQUIPMENT];
+      const response = await axiosInstance.get("/equipment/");
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getById: async (id) => {
-      await delay(300);
-      return EQUIPMENT.find((e) => e.id === parseInt(id));
+      const response = await axiosInstance.get(`/equipment/${id}/`);
+      return response.data;
     },
     create: async (data) => {
-      await delay(500);
-      const newEquipment = {
-        ...data,
-        id: EQUIPMENT.length + 1,
-        status: "OPERATIONAL",
-      };
-      EQUIPMENT.push(newEquipment);
-      return newEquipment;
+      const response = await axiosInstance.post("/equipment/", data);
+      return response.data;
     },
     update: async (id, data) => {
-      await delay(500);
-      const index = EQUIPMENT.findIndex((e) => e.id === parseInt(id));
-      if (index !== -1) {
-        EQUIPMENT[index] = { ...EQUIPMENT[index], ...data };
-        return EQUIPMENT[index];
-      }
-      throw new Error("Equipment not found");
+      const response = await axiosInstance.patch(`/equipment/${id}/`, data);
+      return response.data;
     },
   },
   maintenance: {
     getRequests: async () => {
-      await delay(500);
-      return [...REQUESTS];
+      const response = await axiosInstance.get("/maintenance/");
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     createRequest: async (data) => {
-      await delay(500);
-      const newRequest = {
-        ...data,
-        id: REQUESTS.length + 100,
-        status: "NEW",
-        createdDate: new Date().toISOString().split("T")[0],
-      };
-      REQUESTS.push(newRequest);
-      return newRequest;
+      const response = await axiosInstance.post("/maintenance/", data);
+      return response.data;
     },
-    updateStatus: async (id, statusData) => {
-      await delay(500);
-      const index = REQUESTS.findIndex((r) => r.id === parseInt(id));
-      if (index !== -1) {
-        REQUESTS[index] = { ...REQUESTS[index], ...statusData };
-        return REQUESTS[index];
-      }
-      throw new Error("Request not found");
+    updateStatus: async (id, data) => {
+      const response = await axiosInstance.patch(`/maintenance/${id}/`, data);
+      return response.data;
     },
     getKanban: async () => {
-      await delay(500);
-      return [...REQUESTS]; // In a real app, this might be filtered or formatted differently
+      const response = await axiosInstance.get("/maintenance/kanban/");
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getCalendar: async (start, end) => {
-      await delay(500);
-      return REQUESTS.filter((r) => r.scheduledDate); // Simple filter
+      // Assuming the backend filters by date range or returns all. 
+      // For now, fetching all and client-side filtering logic might be applied where used.
+      const response = await axiosInstance.get("/maintenance/"); 
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
   },
+  teams: {
+    create: async (data) => {
+      const response = await axiosInstance.post("/teams/", data);
+      return response.data;
+    },
+    getAll: async () => {
+      const response = await axiosInstance.get("/teams/");
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
+    },
+  },
+  employees: {
+    create: async (data) => {
+        console.log(data);
+      const response = await axiosInstance.post("/auth/employees/", data);
+      return response.data;
+    },
+    getAll: async () => { // Assuming an endpoint exists to list employees for team creation
+      const response = await axiosInstance.get("/auth/employees/"); 
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
+    }
+  }
 };
 
 export default api;
