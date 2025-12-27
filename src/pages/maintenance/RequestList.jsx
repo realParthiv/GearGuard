@@ -16,7 +16,11 @@ const RequestsList = () => {
       try {
         const data = await api.maintenance.getRequests();
         if (user.role === "USER") {
-          setRequests(data.filter((req) => req.reportedBy === user.name));
+          setRequests(
+            data.filter(
+              (req) => req.reportedBy === (user.full_name || user.name)
+            )
+          );
         } else {
           setRequests(data);
         }

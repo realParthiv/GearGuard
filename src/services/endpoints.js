@@ -4,6 +4,9 @@ export const ENDPOINTS = {
     REGISTER: "/auth/register/",
     REFRESH: "/auth/refresh/",
     ME: "/auth/me/",
+    ROLES: "/auth/roles/",
+    MANAGERS: "/auth/managers/",
+    EMPLOYEES: "/auth/employees/",
   },
   EQUIPMENT: {
     LIST: "/equipment/",
@@ -11,6 +14,7 @@ export const ENDPOINTS = {
   },
   MAINTENANCE: {
     LIST: "/maintenance/requests/",
+    STATS: "/maintenance/stats/",
     DETAIL: (id) => `/maintenance/requests/${id}/`,
     KANBAN: "/maintenance/kanban/",
     CALENDAR: "/maintenance/calendar/",
