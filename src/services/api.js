@@ -48,10 +48,9 @@ const api = {
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getCalendar: async (start, end) => {
-      // Assuming the backend filters by date range or returns all. 
-      // For now, fetching all and client-side filtering logic might be applied where used.
-      const response = await axiosInstance.get("/maintenance/");
-
+      // Backend likely returns all scheduled requests.
+      const response = await axiosInstance.get("/maintenance/calendar/");
+      console.log("Calendar API Response:", response.data);
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
   },
