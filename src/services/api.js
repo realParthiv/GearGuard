@@ -36,6 +36,10 @@ const api = {
       const response = await axiosInstance.get("/maintenance/kanban/");
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
+    getMyTasks: async () => {
+      await delay(500);
+      return [...REQUESTS]; // Mock data for technician tasks
+    },
     getCalendar: async (start, end) => {
       // Assuming the backend filters by date range or returns all. 
       // For now, fetching all and client-side filtering logic might be applied where used.
