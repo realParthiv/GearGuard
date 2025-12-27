@@ -149,6 +149,10 @@ const api = {
       await delay(500);
       return [...REQUESTS]; // In a real app, this might be filtered or formatted differently
     },
+    getMyTasks: async () => {
+      await delay(500);
+      return [...REQUESTS]; // Mock data for technician tasks
+    },
     getCalendar: async (start, end) => {
       await delay(500);
       return REQUESTS.filter((r) => r.scheduledDate); // Simple filter
