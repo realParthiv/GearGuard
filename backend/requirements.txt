@@ -1,0 +1,7 @@
+django<6.0
+djangorestframework
+mysqlclient
+python-dotenv
+django-cors-headers
+djangorestframework-simplejwt
+drf-spectacular
