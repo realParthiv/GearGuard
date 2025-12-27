@@ -44,4 +44,4 @@ GearGuard ensures that every user sees exactly what they need and nothing more.
 | **Parthiv Parmar** | Developer |
 | **Sunny Kadivar** | Developer |
 | **Heet Ramoliya** | Developer |
-| **Vivek** | Developer |
+| **Vivek Suvan** | Developer |
