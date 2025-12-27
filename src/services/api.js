@@ -25,6 +25,7 @@ const api = {
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     createRequest: async (data) => {
+      console.log("API createRequest data:", data);
       const response = await axiosInstance.post("/maintenance/", data);
       return response.data;
     },
@@ -34,6 +35,11 @@ const api = {
     },
     getKanban: async () => {
       const response = await axiosInstance.get("/maintenance/kanban/");
+      console.log("Kanban", response.data);
+      if (response.data && !Array.isArray(response.data) && !response.data.results) {
+         // Handle { NEW: [], IN_PROGRESS: [] } structure
+         return Object.values(response.data).flat();
+      }
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getMyTasks: async () => {
@@ -65,6 +71,7 @@ const api = {
     },
     getAll: async () => { // Assuming an endpoint exists to list employees for team creation
       const response = await axiosInstance.get("/auth/employees/"); 
+      console.log("Employees", response.data);
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     }
   }

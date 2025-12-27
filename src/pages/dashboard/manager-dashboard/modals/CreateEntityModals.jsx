@@ -142,6 +142,70 @@ export const CreateTeamModal = ({ isOpen, onClose, onSuccess }) => {
   );
 };
 
+// --- View Employees Modal ---
+export const ViewEmployeesModal = ({ isOpen, onClose }) => {
+    const [employees, setEmployees] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setLoading(true);
+            api.employees.getAll()
+                .then(setEmployees)
+                .catch(console.error)
+                .finally(() => setLoading(false));
+        }
+    }, [isOpen]);
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Company User List">
+            {loading ? (
+                <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                </div>
+            ) : employees.length === 0 ? (
+                <p className="text-slate-500 text-center py-4">No employees found.</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-slate-400">
+                        <thead className="bg-slate-800 text-xs uppercase text-slate-300">
+                            <tr>
+                                <th className="px-4 py-3 rounded-tl-lg">ID</th>
+                                <th className="px-4 py-3">Name</th>
+                                <th className="px-4 py-3">Email</th>
+                                <th className="px-4 py-3 rounded-tr-lg">Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {employees.map(emp => (
+                                <tr key={emp.id} className="border-b border-slate-800 hover:bg-slate-800/50">
+                                    <td className="px-4 py-3">{emp.id}</td>
+                                    <td className="px-4 py-3 font-medium text-white">{emp.full_name}</td>
+                                    <td className="px-4 py-3">{emp.email}</td>
+                                    <td className="px-4 py-3">
+                                        <span className={clsx("px-2 py-1 rounded-full text-xs font-bold", 
+                                            emp.role === "TECHNICIAN" ? "bg-blue-500/10 text-blue-500" :
+                                            emp.role === "MANAGER" ? "bg-purple-500/10 text-purple-500" :
+                                            "bg-slate-700 text-slate-400"
+                                        )}>
+                                            {emp.role}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+             <div className="flex justify-end mt-4">
+                <button onClick={onClose} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">
+                    Close
+                </button>
+            </div>
+        </Modal>
+    );
+};
+
 // --- View Technicians Modal ---
 export const ViewTechniciansModal = ({ isOpen, onClose }) => {
     const [technicians, setTechnicians] = useState([]);
@@ -288,16 +352,25 @@ export const CreateRequestModal = ({ isOpen, onClose, onSuccess }) => {
 
     const onSubmit = async (data) => {
         try {
-            await api.maintenance.createRequest({
-                ...data,
-                equipment: parseInt(data.equipment)
-            });
+            const cleanPayload = {
+                subject: data.subject,
+                description: data.description,
+                request_type: data.request_type,
+                equipment: parseInt(data.equipment),
+                // Explicitly send null for scheduled_date if not preventive/missing to match some backend expectations
+                scheduled_date: (data.request_type === "PREVENTIVE" && data.scheduled_date) ? data.scheduled_date : null
+            };
+
+            console.log("Creating Request Payload (Refined):", cleanPayload);
+
+            await api.maintenance.createRequest(cleanPayload);
             reset();
             onSuccess();
             onClose();
         } catch (error) {
             console.error("Failed to create request:", error);
-            alert(error.message || "Failed");
+            // Alert the RAW JSON to see the exact field causing the 400
+            alert(JSON.stringify(error.response?.data || error.message));
         }
     };
 

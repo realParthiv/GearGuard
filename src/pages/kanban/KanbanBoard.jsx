@@ -31,6 +31,9 @@ const KanbanBoard = () => {
   const fetchData = async () => {
     try {
       const requests = await api.maintenance.getKanban();
+      console.log("Kanban Raw Data:", requests);
+      console.log("User Role:", user?.role);
+
       const newColumns = {
         NEW: { id: "NEW", title: "New Requests", items: [] },
         IN_PROGRESS: { id: "IN_PROGRESS", title: "In Progress", items: [] },
@@ -39,20 +42,43 @@ const KanbanBoard = () => {
       };
 
       requests.forEach((req) => {
+        // Normalize keys (Backend might return snake_case)
+        const status = req.status || req.Status; 
+        const assignedTo = req.assignedTo || 
+                           req.assigned_technician_details?.full_name || 
+                           req.assigned_user?.full_name || 
+                           req.assigned_to; 
+
+        const equipmentName = req.equipmentName || 
+                              req.equipment_details?.name || 
+                              req.equipment_name || 
+                              (typeof req.equipment === 'object' ? req.equipment.name : `Equipment #${req.equipment}`);
+        
+        const requestType = req.type || req.request_type;
+        const priority = req.priority || (requestType === "CORRECTIVE" ? "HIGH" : "MEDIUM"); // Default priority if missing
+
+        const normalizedReq = { ...req, status, assignedTo, equipmentName, type: requestType, priority };
+
+        console.log(`Processing Req ${req.id}: Status=${status}, Assigned=${assignedTo}`);
+        
         // Filter for Technician: Show assigned to me OR unassigned (to pick up)
         // For Admin/Manager: Show all
         if (user.role === "TECHNICIAN") {
           if (
-            req.assignedTo === (user.full_name || user.name) ||
-            !req.assignedTo
+            assignedTo === (user.full_name || user.name) ||
+            !assignedTo
           ) {
-            if (newColumns[req.status]) {
-              newColumns[req.status].items.push(req);
+            if (newColumns[status]) {
+              newColumns[status].items.push(normalizedReq);
+            } else {
+                 console.warn("Unknown status:", status);
             }
           }
         } else {
-          if (newColumns[req.status]) {
-            newColumns[req.status].items.push(req);
+          if (newColumns[status]) {
+            newColumns[status].items.push(normalizedReq);
+          } else {
+               console.warn("Unknown status:", status);
           }
         }
       });
