@@ -25,6 +25,7 @@ const api = {
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     createRequest: async (data) => {
+      console.log("API createRequest data:", data);
       const response = await axiosInstance.post("/maintenance/", data);
       return response.data;
     },
@@ -34,16 +35,22 @@ const api = {
     },
     getKanban: async () => {
       const response = await axiosInstance.get("/maintenance/kanban/");
+      console.log("Kanban", response.data);
+      if (response.data && !Array.isArray(response.data) && !response.data.results) {
+         // Handle { NEW: [], IN_PROGRESS: [] } structure
+         return Object.values(response.data).flat();
+      }
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getMyTasks: async () => {
-      await delay(500);
-      return [...REQUESTS]; // Mock data for technician tasks
+      const response = await axiosInstance.get("/maintenance/my_tasks/");
+      console.log(response.data);
+      return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
     getCalendar: async (start, end) => {
-      // Assuming the backend filters by date range or returns all. 
-      // For now, fetching all and client-side filtering logic might be applied where used.
-      const response = await axiosInstance.get("/maintenance/"); 
+      // Backend likely returns all scheduled requests.
+      const response = await axiosInstance.get("/maintenance/calendar/");
+      console.log("Calendar API Response:", response.data);
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     },
   },
@@ -59,12 +66,13 @@ const api = {
   },
   employees: {
     create: async (data) => {
-        console.log(data);
+      console.log(data);
       const response = await axiosInstance.post("/auth/employees/", data);
       return response.data;
     },
     getAll: async () => { // Assuming an endpoint exists to list employees for team creation
       const response = await axiosInstance.get("/auth/employees/"); 
+      console.log("Employees", response.data);
       return Array.isArray(response.data) ? response.data : (response.data.results || []);
     }
   }

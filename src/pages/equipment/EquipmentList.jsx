@@ -115,6 +115,7 @@ const EquipmentList = () => {
              </div>
         ) : (
             filteredEquipment.map((item) => {
+                console.log("item", item);
             const StatusIcon = getStatusIcon(item.status);
             return (
                 <Link
@@ -122,25 +123,16 @@ const EquipmentList = () => {
                 key={item.id}
                 className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all group"
                 >
-                <div className="h-48 overflow-hidden relative">
-                    <img
-                    src={item.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80"}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-slate-900 to-transparent opacity-60" />
-                    <div
+                <div className="p-5 relative">
+                    {/*<div
                     className={clsx(
-                        "absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border backdrop-blur-md",
+                        "absolute top-5 right-5 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border backdrop-blur-md",
                         getStatusColor(item.status)
                     )}
                     >
                     <StatusIcon className="w-3.5 h-3.5" />
                     {item.status || "UNKNOWN"}
-                    </div>
-                </div>
-
-                <div className="p-5">
+                    </div>*/}
                     <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
                         {item.name}

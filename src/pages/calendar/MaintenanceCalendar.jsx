@@ -21,7 +21,19 @@ const MaintenanceCalendar = () => {
         const start = currentDate.startOf("month").format("YYYY-MM-DD");
         const end = currentDate.endOf("month").format("YYYY-MM-DD");
         const data = await api.maintenance.getCalendar(start, end);
-        setEvents(data);
+        console.log("Raw Calendar Data:", data);
+        
+        // Normalize fields
+        const normalizedData = data.map(evt => ({
+            ...evt,
+            scheduledDate: evt.scheduledDate || evt.scheduled_date || evt.start_date || evt.start, // Handle varied date keys
+            subject: evt.subject || evt.title,
+            equipmentName: evt.equipmentName || evt.equipment_details?.name || evt.equipment_name,
+            assignedTo: evt.assignedTo || evt.assigned_technician_details?.full_name || evt.assigned_user?.full_name,
+            priority: evt.priority || (evt.request_type === "CORRECTIVE" ? "HIGH" : "MEDIUM")
+        }));
+        console.log("Normalized Calendar Data:", normalizedData);
+        setEvents(normalizedData);
       } catch (error) {
         console.error("Failed to fetch calendar events:", error);
       } finally {

@@ -9,7 +9,8 @@ import {
   CreateTeamModal,
   CreateEquipmentModal,
   CreateRequestModal,
-  ViewTechniciansModal
+  ViewTechniciansModal,
+  ViewEmployeesModal
 } from "./modals/CreateEntityModals";
 
 const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
@@ -41,6 +42,7 @@ const ManagerDashboard = () => {
   const [isEquipmentModalOpen, setIsEquipmentModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [isViewTechModalOpen, setIsViewTechModalOpen] = useState(false);
+  const [isViewEmployeesModalOpen, setIsViewEmployeesModalOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -87,6 +89,13 @@ const ManagerDashboard = () => {
         
         {/* Quick Actions */}
         <div className="flex gap-2">
+            <button
+                onClick={() => setIsViewEmployeesModalOpen(true)}
+                className="bg-slate-800 hover:bg-slate-700 text-white p-2 rounded-lg transition-colors border border-slate-700"
+                title="View All Employees"
+            >
+                <Users className="w-5 h-5" />
+            </button>
             <button
                 onClick={() => setIsViewTechModalOpen(true)}
                 className="bg-slate-800 hover:bg-slate-700 text-white p-2 rounded-lg transition-colors border border-slate-700"
@@ -160,6 +169,10 @@ const ManagerDashboard = () => {
       </div>
 
       {/* Modals */}
+      <ViewEmployeesModal 
+        isOpen={isViewEmployeesModalOpen} 
+        onClose={() => setIsViewEmployeesModalOpen(false)} 
+      />
       <ViewTechniciansModal 
         isOpen={isViewTechModalOpen} 
         onClose={() => setIsViewTechModalOpen(false)} 

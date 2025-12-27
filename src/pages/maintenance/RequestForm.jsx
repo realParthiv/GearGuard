@@ -24,7 +24,6 @@ const RequestForm = () => {
   } = useForm({
     defaultValues: {
       type: "CORRECTIVE",
-      priority: "MEDIUM",
       equipmentId: location.state?.equipmentId || "",
     },
   });
@@ -46,17 +45,19 @@ const RequestForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      const selectedEquipment = equipmentList.find(
-        (e) => e.id === parseInt(data.equipmentId)
-      );
-      await api.maintenance.createRequest({
-        ...data,
-        equipmentName: selectedEquipment?.name,
-        reportedBy: user.full_name || user.name,
-      });
+      const cleanPayload = {
+          subject: data.subject,
+          description: data.description,
+          request_type: data.type,
+          equipment: parseInt(data.equipmentId),
+          scheduled_date: (data.type === "PREVENTIVE" && data.scheduledDate) ? data.scheduledDate : null
+      };
+
+      await api.maintenance.createRequest(cleanPayload);
       navigate("/requests");
     } catch (error) {
       console.error("Failed to create request:", error);
+      alert("Failed to create request");
     }
   };
 
@@ -175,22 +176,7 @@ const RequestForm = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Priority
-              </label>
-              <select
-                {...register("priority")}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="CRITICAL">Critical</option>
-              </select>
-            </div>
-
+          <div className="grid grid-cols-1 gap-6">
             {requestType === "PREVENTIVE" &&
               ["ADMIN", "MANAGER"].includes(user.role) && (
                 <div>

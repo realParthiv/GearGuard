@@ -15,14 +15,23 @@ const RequestsList = () => {
     const fetchRequests = async () => {
       try {
         const data = await api.maintenance.getRequests();
+        const mappedData = data.map(req => ({
+            ...req,
+            priority: req.priority || (req.request_type === "CORRECTIVE" ? "HIGH" : "MEDIUM"),
+            status: req.status || req.Status,
+            type: req.type || req.request_type,
+            equipmentName: req.equipmentName || req.equipment_details?.name || (typeof req.equipment === 'object' ? req.equipment.name : `Equipment #${req.equipment}`),
+            assignedTo: req.assignedTo || req.assigned_technician_details?.full_name || req.assigned_user?.full_name
+        }));
+
         if (user.role === "USER") {
           setRequests(
-            data.filter(
-              (req) => req.reportedBy === (user.full_name || user.name)
+            mappedData.filter(
+              (req) => (req.reportedBy || req.created_by_details?.full_name) === (user.full_name || user.name)
             )
           );
         } else {
-          setRequests(data);
+          setRequests(mappedData);
         }
       } catch (error) {
         console.error("Failed to fetch requests:", error);
