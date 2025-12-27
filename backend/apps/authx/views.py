@@ -9,6 +9,7 @@ from .serializers import (
     RegisterSerializer, UserSerializer, CreateEmployeeSerializer, 
     CompanySerializer, MyTokenObtainPairSerializer
 )
+from .permissions import IsOwnerOrManager   
 
 User = get_user_model()
 
@@ -68,7 +69,7 @@ class RoleListView(APIView):
         return Response(roles)
 
 class BaseUserViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsOwnerOrManager]
 
     def get_serializer_class(self):
         if self.action == 'create':
