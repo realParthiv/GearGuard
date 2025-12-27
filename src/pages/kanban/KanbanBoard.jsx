@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import api from "../../services/api";
 import Loader from "../../components/common/Loader";
+import Modal from "../../components/common/Modal";
 import {
   Clock,
   AlertTriangle,
@@ -22,43 +23,49 @@ const KanbanBoard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const requests = await api.maintenance.getKanban();
-        const newColumns = {
-          NEW: { id: "NEW", title: "New Requests", items: [] },
-          IN_PROGRESS: { id: "IN_PROGRESS", title: "In Progress", items: [] },
-          REPAIRED: { id: "REPAIRED", title: "Repaired", items: [] },
-          SCRAP: { id: "SCRAP", title: "Scrap", items: [] },
-        };
+  // Repaired specific state
+  const [isRepairedModalOpen, setIsRepairedModalOpen] = useState(false);
+  const [pendingRepairedItem, setPendingRepairedItem] = useState(null); // { itemId, source, destination }
+  const [durationHours, setDurationHours] = useState("");
 
-        requests.forEach((req) => {
-          // Filter for Technician: Show assigned to me OR unassigned (to pick up)
-          // For Admin/Manager: Show all
-          if (user.role === "TECHNICIAN") {
-            if (
-              req.assignedTo === (user.full_name || user.name) ||
-              !req.assignedTo
-            ) {
-              if (newColumns[req.status]) {
-                newColumns[req.status].items.push(req);
-              }
-            }
-          } else {
+  const fetchData = async () => {
+    try {
+      const requests = await api.maintenance.getKanban();
+      const newColumns = {
+        NEW: { id: "NEW", title: "New Requests", items: [] },
+        IN_PROGRESS: { id: "IN_PROGRESS", title: "In Progress", items: [] },
+        REPAIRED: { id: "REPAIRED", title: "Repaired", items: [] },
+        SCRAP: { id: "SCRAP", title: "Scrap", items: [] },
+      };
+
+      requests.forEach((req) => {
+        // Filter for Technician: Show assigned to me OR unassigned (to pick up)
+        // For Admin/Manager: Show all
+        if (user.role === "TECHNICIAN") {
+          if (
+            req.assignedTo === (user.full_name || user.name) ||
+            !req.assignedTo
+          ) {
             if (newColumns[req.status]) {
               newColumns[req.status].items.push(req);
             }
           }
-        });
+        } else {
+          if (newColumns[req.status]) {
+            newColumns[req.status].items.push(req);
+          }
+        }
+      });
 
-        setColumns(newColumns);
-      } catch (error) {
-        console.error("Failed to fetch kanban data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setColumns(newColumns);
+    } catch (error) {
+      console.error("Failed to fetch kanban data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [user]);
 
@@ -66,8 +73,7 @@ const KanbanBoard = () => {
     try {
       // Optimistic update
       const updatedColumns = { ...columns };
-      let foundItem = null;
-
+      
       Object.keys(updatedColumns).forEach((key) => {
         const itemIndex = updatedColumns[key].items.findIndex(
           (i) => i.id === requestId
@@ -75,7 +81,6 @@ const KanbanBoard = () => {
         if (itemIndex !== -1) {
           updatedColumns[key].items[itemIndex].assignedTo =
             user.full_name || user.name;
-          foundItem = updatedColumns[key].items[itemIndex];
         }
       });
 
@@ -85,17 +90,11 @@ const KanbanBoard = () => {
       });
     } catch (error) {
       console.error("Failed to assign self:", error);
+      fetchData(); // transform back on error
     }
   };
 
-  const onDragEnd = async (result) => {
-    if (!result.destination) return;
-    const { source, destination } = result;
-
-    // Technician restriction: Can only move if assigned to them (or picking up from NEW?)
-    // Let's allow moving if it's in their view, but maybe enforce assignment on move to IN_PROGRESS?
-
-    if (source.droppableId !== destination.droppableId) {
+  const moveItem = async (itemId, source, destination, extraData = {}) => {
       const sourceColumn = columns[source.droppableId];
       const destColumn = columns[destination.droppableId];
       const sourceItems = [...sourceColumn.items];
@@ -117,6 +116,7 @@ const KanbanBoard = () => {
         ...removed,
         status: destination.droppableId,
         assignedTo: newAssignedTo,
+        ...extraData
       };
       destItems.splice(destination.index, 0, updatedItem);
 
@@ -130,11 +130,31 @@ const KanbanBoard = () => {
         await api.maintenance.updateStatus(removed.id, {
           status: destination.droppableId,
           assignedTo: newAssignedTo,
+          ...extraData
         });
       } catch (error) {
         console.error("Failed to update status:", error);
+        fetchData(); // Revert on error
       }
+  };
+
+  const onDragEnd = async (result) => {
+    if (!result.destination) return;
+    const { source, destination, draggableId } = result;
+
+    if (source.droppableId !== destination.droppableId) {
+        // Check if moving to REPAIRED
+        if (destination.droppableId === "REPAIRED") {
+            setPendingRepairedItem({ itemId: draggableId, source, destination });
+            setDurationHours(""); // Reset
+            setIsRepairedModalOpen(true);
+            return;
+        }
+        
+        // Normal move
+        await moveItem(draggableId, source, destination);
     } else {
+      // Reordering in same column
       const column = columns[source.droppableId];
       const copiedItems = [...column.items];
       const [removed] = copiedItems.splice(source.index, 1);
@@ -144,6 +164,17 @@ const KanbanBoard = () => {
         [source.droppableId]: { ...column, items: copiedItems },
       });
     }
+  };
+
+  const handleRepairedConfirm = async (e) => {
+      e.preventDefault();
+      if(!pendingRepairedItem) return;
+      
+      const { itemId, source, destination } = pendingRepairedItem;
+      await moveItem(itemId, source, destination, { duration_hours: parseFloat(durationHours) });
+      
+      setIsRepairedModalOpen(false);
+      setPendingRepairedItem(null);
   };
 
   if (loading) return <Loader />;
@@ -217,7 +248,7 @@ const KanbanBoard = () => {
                                 {item.subject}
                               </h4>
                               <p className="text-slate-400 text-xs mb-3">
-                                {item.equipmentName}
+                                {item.equipmentName || "Equipment #" + item.equipment}
                               </p>
 
                               <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
@@ -262,6 +293,29 @@ const KanbanBoard = () => {
           </div>
         </DragDropContext>
       </div>
+
+       <Modal isOpen={isRepairedModalOpen} onClose={() => setIsRepairedModalOpen(false)} title="Complete Maintenance">
+          <form onSubmit={handleRepairedConfirm} className="space-y-4">
+              <p className="text-slate-300 text-sm">Please specify how long this repair took to complete.</p>
+              <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Duration (Hours)</label>
+                  <input 
+                    type="number" 
+                    step="0.5" 
+                    min="0"
+                    required 
+                    value={durationHours} 
+                    onChange={e => setDurationHours(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white" 
+                    autoFocus
+                  />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                  <button type="button" onClick={() => setIsRepairedModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                  <button className="bg-green-600 text-white px-4 py-2 rounded-lg">Mark as Repaired</button>
+              </div>
+          </form>
+       </Modal>
     </div>
   );
 };
