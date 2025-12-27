@@ -83,6 +83,7 @@ const KanbanBoard = () => {
         }
       });
 
+      console.log("Processed columns:", newColumns);
       setColumns(newColumns);
     } catch (error) {
       console.error("Failed to fetch kanban data:", error);
@@ -99,7 +100,7 @@ const KanbanBoard = () => {
     try {
       // Optimistic update
       const updatedColumns = { ...columns };
-      
+
       Object.keys(updatedColumns).forEach((key) => {
         const itemIndex = updatedColumns[key].items.findIndex(
           (i) => i.id === requestId
@@ -121,47 +122,47 @@ const KanbanBoard = () => {
   };
 
   const moveItem = async (itemId, source, destination, extraData = {}) => {
-      const sourceColumn = columns[source.droppableId];
-      const destColumn = columns[destination.droppableId];
-      const sourceItems = [...sourceColumn.items];
-      const destItems = [...destColumn.items];
-      const [removed] = sourceItems.splice(source.index, 1);
+    const sourceColumn = columns[source.droppableId];
+    const destColumn = columns[destination.droppableId];
+    const sourceItems = [...sourceColumn.items];
+    const destItems = [...destColumn.items];
+    const [removed] = sourceItems.splice(source.index, 1);
 
-      // If Technician moves to IN_PROGRESS and not assigned, auto-assign
-      let newAssignedTo = removed.assignedTo;
-      if (
-        user.role === "TECHNICIAN" &&
-        !removed.assignedTo &&
-        destination.droppableId === "IN_PROGRESS"
-      ) {
-        newAssignedTo = user.full_name || user.name;
-      }
+    // If Technician moves to IN_PROGRESS and not assigned, auto-assign
+    let newAssignedTo = removed.assignedTo;
+    if (
+      user.role === "TECHNICIAN" &&
+      !removed.assignedTo &&
+      destination.droppableId === "IN_PROGRESS"
+    ) {
+      newAssignedTo = user.full_name || user.name;
+    }
 
-      // Optimistic update
-      const updatedItem = {
-        ...removed,
+    // Optimistic update
+    const updatedItem = {
+      ...removed,
+      status: destination.droppableId,
+      assignedTo: newAssignedTo,
+      ...extraData
+    };
+    destItems.splice(destination.index, 0, updatedItem);
+
+    setColumns({
+      ...columns,
+      [source.droppableId]: { ...sourceColumn, items: sourceItems },
+      [destination.droppableId]: { ...destColumn, items: destItems },
+    });
+
+    try {
+      await api.maintenance.updateStatus(removed.id, {
         status: destination.droppableId,
         assignedTo: newAssignedTo,
         ...extraData
-      };
-      destItems.splice(destination.index, 0, updatedItem);
-
-      setColumns({
-        ...columns,
-        [source.droppableId]: { ...sourceColumn, items: sourceItems },
-        [destination.droppableId]: { ...destColumn, items: destItems },
       });
-
-      try {
-        await api.maintenance.updateStatus(removed.id, {
-          status: destination.droppableId,
-          assignedTo: newAssignedTo,
-          ...extraData
-        });
-      } catch (error) {
-        console.error("Failed to update status:", error);
-        fetchData(); // Revert on error
-      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      fetchData(); // Revert on error
+    }
   };
 
   const onDragEnd = async (result) => {
@@ -169,16 +170,16 @@ const KanbanBoard = () => {
     const { source, destination, draggableId } = result;
 
     if (source.droppableId !== destination.droppableId) {
-        // Check if moving to REPAIRED
-        if (destination.droppableId === "REPAIRED") {
-            setPendingRepairedItem({ itemId: draggableId, source, destination });
-            setDurationHours(""); // Reset
-            setIsRepairedModalOpen(true);
-            return;
-        }
-        
-        // Normal move
-        await moveItem(draggableId, source, destination);
+      // Check if moving to REPAIRED
+      if (destination.droppableId === "REPAIRED") {
+        setPendingRepairedItem({ itemId: draggableId, source, destination });
+        setDurationHours(""); // Reset
+        setIsRepairedModalOpen(true);
+        return;
+      }
+
+      // Normal move
+      await moveItem(draggableId, source, destination);
     } else {
       // Reordering in same column
       const column = columns[source.droppableId];
@@ -193,14 +194,14 @@ const KanbanBoard = () => {
   };
 
   const handleRepairedConfirm = async (e) => {
-      e.preventDefault();
-      if(!pendingRepairedItem) return;
-      
-      const { itemId, source, destination } = pendingRepairedItem;
-      await moveItem(itemId, source, destination, { duration_hours: parseFloat(durationHours) });
-      
-      setIsRepairedModalOpen(false);
-      setPendingRepairedItem(null);
+    e.preventDefault();
+    if (!pendingRepairedItem) return;
+
+    const { itemId, source, destination } = pendingRepairedItem;
+    await moveItem(itemId, source, destination, { duration_hours: parseFloat(durationHours) });
+
+    setIsRepairedModalOpen(false);
+    setPendingRepairedItem(null);
   };
 
   if (loading) return <Loader />;
@@ -260,8 +261,8 @@ const KanbanBoard = () => {
                                     item.priority === "CRITICAL"
                                       ? "text-red-500 border-red-500/20 bg-red-500/10"
                                       : item.priority === "HIGH"
-                                      ? "text-orange-500 border-orange-500/20 bg-orange-500/10"
-                                      : "text-blue-500 border-blue-500/20 bg-blue-500/10"
+                                        ? "text-orange-500 border-orange-500/20 bg-orange-500/10"
+                                        : "text-blue-500 border-blue-500/20 bg-blue-500/10"
                                   )}
                                 >
                                   {item.priority}
@@ -320,28 +321,28 @@ const KanbanBoard = () => {
         </DragDropContext>
       </div>
 
-       <Modal isOpen={isRepairedModalOpen} onClose={() => setIsRepairedModalOpen(false)} title="Complete Maintenance">
-          <form onSubmit={handleRepairedConfirm} className="space-y-4">
-              <p className="text-slate-300 text-sm">Please specify how long this repair took to complete.</p>
-              <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Duration (Hours)</label>
-                  <input 
-                    type="number" 
-                    step="0.5" 
-                    min="0"
-                    required 
-                    value={durationHours} 
-                    onChange={e => setDurationHours(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white" 
-                    autoFocus
-                  />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => setIsRepairedModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
-                  <button className="bg-green-600 text-white px-4 py-2 rounded-lg">Mark as Repaired</button>
-              </div>
-          </form>
-       </Modal>
+      <Modal isOpen={isRepairedModalOpen} onClose={() => setIsRepairedModalOpen(false)} title="Complete Maintenance">
+        <form onSubmit={handleRepairedConfirm} className="space-y-4">
+          <p className="text-slate-300 text-sm">Please specify how long this repair took to complete.</p>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Duration (Hours)</label>
+            <input
+              type="number"
+              step="0.5"
+              min="0"
+              required
+              value={durationHours}
+              onChange={e => setDurationHours(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white"
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setIsRepairedModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+            <button className="bg-green-600 text-white px-4 py-2 rounded-lg">Mark as Repaired</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
