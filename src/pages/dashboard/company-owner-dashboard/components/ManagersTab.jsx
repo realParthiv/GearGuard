@@ -105,7 +105,6 @@ const ManagersTab = ({ managers, fetchData }) => {
                 <th className="px-6 py-4 font-medium">Name</th>
                 <th className="px-6 py-4 font-medium">Contact</th>
                 <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Joined</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
@@ -113,7 +112,7 @@ const ManagersTab = ({ managers, fetchData }) => {
               {filteredManagers.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="4"
                     className="px-6 py-8 text-center text-slate-500"
                   >
                     No managers found.
@@ -158,9 +157,6 @@ const ManagersTab = ({ managers, fetchData }) => {
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20">
                         {manager.status || "Active"}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-400 text-sm">
-                      {manager.joinedDate || "N/A"}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

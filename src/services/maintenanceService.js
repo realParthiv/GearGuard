@@ -32,6 +32,18 @@ const maintenanceService = {
       throw error.response?.data || error.message;
     }
   },
+
+  createRequest: async (data) => {
+    try {
+      const response = await axiosInstance.post(
+        ENDPOINTS.MAINTENANCE.CREATE_REQUEST,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default maintenanceService;
