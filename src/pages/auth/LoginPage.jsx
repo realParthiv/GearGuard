@@ -20,11 +20,15 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
       toast.success("Welcome back!");
       // Small delay to let the user see the toast
       setTimeout(() => {
-        navigate(from, { replace: true });
+        if (user.role === "COMPANY_OWNER") {
+          navigate("/company-dashboard", { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
       }, 1000);
     } catch (error) {
       toast.error(error.detail || "Invalid email or password");
@@ -121,7 +125,7 @@ const LoginPage = () => {
                 to="/register"
                 className="text-blue-500 hover:text-blue-400 font-medium"
               >
-                Sign Up
+                Register New Company
               </Link>
             </p>
           </div>

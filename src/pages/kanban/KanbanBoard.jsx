@@ -37,7 +37,10 @@ const KanbanBoard = () => {
           // Filter for Technician: Show assigned to me OR unassigned (to pick up)
           // For Admin/Manager: Show all
           if (user.role === "TECHNICIAN") {
-            if (req.assignedTo === user.name || !req.assignedTo) {
+            if (
+              req.assignedTo === (user.full_name || user.name) ||
+              !req.assignedTo
+            ) {
               if (newColumns[req.status]) {
                 newColumns[req.status].items.push(req);
               }
@@ -70,13 +73,16 @@ const KanbanBoard = () => {
           (i) => i.id === requestId
         );
         if (itemIndex !== -1) {
-          updatedColumns[key].items[itemIndex].assignedTo = user.name;
+          updatedColumns[key].items[itemIndex].assignedTo =
+            user.full_name || user.name;
           foundItem = updatedColumns[key].items[itemIndex];
         }
       });
 
       setColumns(updatedColumns);
-      await api.maintenance.updateStatus(requestId, { assignedTo: user.name });
+      await api.maintenance.updateStatus(requestId, {
+        assignedTo: user.full_name || user.name,
+      });
     } catch (error) {
       console.error("Failed to assign self:", error);
     }
@@ -103,7 +109,7 @@ const KanbanBoard = () => {
         !removed.assignedTo &&
         destination.droppableId === "IN_PROGRESS"
       ) {
-        newAssignedTo = user.name;
+        newAssignedTo = user.full_name || user.name;
       }
 
       // Optimistic update

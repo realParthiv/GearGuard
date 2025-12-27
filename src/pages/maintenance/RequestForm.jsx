@@ -52,7 +52,7 @@ const RequestForm = () => {
       await api.maintenance.createRequest({
         ...data,
         equipmentName: selectedEquipment?.name,
-        reportedBy: user.name,
+        reportedBy: user.full_name || user.name,
       });
       navigate("/requests");
     } catch (error) {

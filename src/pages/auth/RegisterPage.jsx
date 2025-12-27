@@ -21,18 +21,59 @@ const RegisterPage = () => {
         full_name: data.fullName,
         email: data.email,
         password: data.password,
-        role: "USER", // Default role
+        company_name: data.companyName,
       };
       await authService.register(payload);
       toast.success("Registration successful! Please login.");
       navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
-      toast.error(error.detail || "Registration failed. Please try again.");
-      setError("root", {
-        type: "manual",
-        message: error.detail || "Registration failed. Please try again.",
-      });
+
+      // Handle field-specific errors
+      if (error.password) {
+        setError("password", {
+          type: "server",
+          message: error.password[0],
+        });
+      }
+      if (error.email) {
+        setError("email", {
+          type: "server",
+          message: error.email[0],
+        });
+      }
+      if (error.company_name) {
+        setError("companyName", {
+          type: "server",
+          message: error.company_name[0],
+        });
+      }
+      if (error.full_name) {
+        setError("fullName", {
+          type: "server",
+          message: error.full_name[0],
+        });
+      }
+
+      // Show generic error if no specific field error or as a fallback
+      const errorMessage =
+        error.detail ||
+        (error.password
+          ? "Please check the form for errors."
+          : "Registration failed. Please try again.");
+      toast.error(errorMessage);
+
+      if (
+        !error.password &&
+        !error.email &&
+        !error.company_name &&
+        !error.full_name
+      ) {
+        setError("root", {
+          type: "manual",
+          message: errorMessage,
+        });
+      }
     }
   };
   return (
@@ -46,11 +87,35 @@ const RegisterPage = () => {
           </div>
 
           <h2 className="text-3xl font-bold text-center text-white mb-2">
-            Join GearGuard
+            Register Company
           </h2>
-          <p className="text-slate-400 text-center mb-8">Create your account</p>
+          <p className="text-slate-400 text-center mb-8">
+            Create your company account
+          </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Company Name
+              </label>
+              <div className="relative">
+                <Wrench className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <input
+                  {...register("companyName", {
+                    required: "Company Name is required",
+                  })}
+                  type="text"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Acme Corp"
+                />
+              </div>
+              {errors.companyName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.companyName.message}
+                </p>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 Full Name
@@ -103,8 +168,8 @@ const RegisterPage = () => {
                   {...register("password", {
                     required: "Password is required",
                     minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters",
+                      value: 8,
+                      message: "Password must be at least 8 characters",
                     },
                   })}
                   type="password"

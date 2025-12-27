@@ -18,6 +18,10 @@ import RequestForm from "./pages/maintenance/RequestForm";
 import KanbanBoard from "./pages/kanban/KanbanBoard";
 import MaintenanceCalendar from "./pages/calendar/MaintenanceCalendar";
 import DashboardHome from "./pages/dashboard/DashboardHome";
+import CompanyOwnerDashboard from "./pages/dashboard/company-owner-dashboard/CompanyOwnerDashboard";
+import ManagerDashboard from "./pages/dashboard/manager-dashboard/ManagerDashboard";
+import TechnicianDashboard from "./pages/dashboard/technician-dashboard/TechnicianDashboard";
+import EmployeeDashboard from "./pages/dashboard/employee-dashboard/EmployeeDashboard";
 import Loader from "./components/common/Loader";
 import ToastNotification from "./components/common/ToastNotification";
 
@@ -44,6 +48,19 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/" element={<DashboardHome />} />
+              <Route
+                path="/company-dashboard"
+                element={<CompanyOwnerDashboard />}
+              />
+              <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              <Route
+                path="/technician-dashboard"
+                element={<TechnicianDashboard />}
+              />
+              <Route
+                path="/employee-dashboard"
+                element={<EmployeeDashboard />}
+              />
               <Route path="/equipment" element={<EquipmentList />} />
               <Route path="/equipment/new" element={<EquipmentForm />} />
               <Route path="/equipment/:id" element={<EquipmentDetail />} />

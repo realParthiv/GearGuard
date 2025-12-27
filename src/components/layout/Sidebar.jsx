@@ -16,10 +16,28 @@ const Sidebar = () => {
 
   const links = [
     {
-      to: "/",
-      label: "Dashboard",
+      to: "/company-dashboard",
+      label: "Company Dashboard",
       icon: LayoutDashboard,
-      roles: ["ADMIN", "MANAGER", "TECHNICIAN", "USER"],
+      roles: ["COMPANY_OWNER"],
+    },
+    {
+      to: "/manager-dashboard",
+      label: "Manager Dashboard",
+      icon: LayoutDashboard,
+      roles: ["MANAGER", "ADMIN"],
+    },
+    {
+      to: "/technician-dashboard",
+      label: "Tech Dashboard",
+      icon: LayoutDashboard,
+      roles: ["TECHNICIAN"],
+    },
+    {
+      to: "/employee-dashboard",
+      label: "My Dashboard",
+      icon: LayoutDashboard,
+      roles: ["USER"],
     },
     {
       to: "/equipment",
