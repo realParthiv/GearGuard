@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { Wrench, User, Mail, Lock, Loader2 } from "lucide-react";
 import authService from "../../services/authService";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const RegisterPage = () => {
   const {

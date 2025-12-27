@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Wrench, Lock, Mail, Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const {
@@ -123,11 +123,6 @@ const LoginPage = () => {
               >
                 Sign Up
               </Link>
-            </p>
-            <p className="text-slate-500 text-xs">
-              Demo Accounts: <br />
-              <span className="text-slate-400">admin@gearguard.com</span> /{" "}
-              <span className="text-slate-400">password</span>
             </p>
           </div>
         </div>

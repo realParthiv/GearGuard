@@ -19,7 +19,7 @@ import KanbanBoard from "./pages/kanban/KanbanBoard";
 import MaintenanceCalendar from "./pages/calendar/MaintenanceCalendar";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import Loader from "./components/common/Loader";
-import { Toaster } from "react-hot-toast";
+import ToastNotification from "./components/common/ToastNotification";
 
 // Protected Route Wrapper
 const ProtectedRoute = () => {
@@ -36,15 +36,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "#1e293b",
-              color: "#fff",
-            },
-          }}
-        />
+        <ToastNotification />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
