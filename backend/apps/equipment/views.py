@@ -1,14 +1,17 @@
-from rest_framework import viewsets, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.db.models import Count, Q
+from apps.authx.permissions import IsOwnerOrManager
+from rest_framework import permissions
+from rest_framework import viewsets
 from .models import Equipment
 from .serializers import EquipmentSerializer
-
+from rest_framework.decorators import action
 class EquipmentViewSet(viewsets.ModelViewSet):
     queryset = Equipment.objects.all().order_by('-created_at')
     serializer_class = EquipmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsOwnerOrManager()]
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         # Annotate with count of open (not REPAIRED or SCRAP) requests

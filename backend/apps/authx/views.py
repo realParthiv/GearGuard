@@ -1,9 +1,14 @@
 from rest_framework import generics, permissions, status, viewsets
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, CreateEmployeeSerializer, CompanySerializer
+from rest_framework.decorators import action
+from .serializers import (
+    RegisterSerializer, UserSerializer, CreateEmployeeSerializer, 
+    CompanySerializer, MyTokenObtainPairSerializer
+)
 
 User = get_user_model()
 
@@ -28,6 +33,9 @@ class RegisterView(generics.CreateAPIView):
                 "access": str(refresh.access_token),
             }
         }, status=status.HTTP_201_CREATED)
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 class MeView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
@@ -59,7 +67,7 @@ class RoleListView(APIView):
         ]
         return Response(roles)
 
-class EmployeeViewSet(viewsets.ModelViewSet):
+class BaseUserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
@@ -67,31 +75,60 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             return CreateEmployeeSerializer
         return UserSerializer
 
-    def get_queryset(self):
-        # Only show employees of the same company, exclude current user
-        return User.objects.filter(company=self.request.user.company).exclude(id=self.request.user.id)
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['company'] = self.request.user.company
         return context
 
-    def perform_create(self, serializer):
-        user_role = self.request.user.role
-        target_role = serializer.validated_data.get('role')
-
-        if user_role == 'COMPANY_OWNER':
-            if target_role != 'MANAGER':
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError({"role": "Company Owners can only add Managers."})
-        elif user_role == 'MANAGER':
-            if target_role not in ['TECHNICIAN', 'USER']:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError({"role": "Managers can only add Technicians or standard Users."})
-        else:
-            from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("You do not have permission to add employees.")
+    @action(detail=True, methods=['post'])
+    def toggle_status(self, request, pk=None):
+        """Enable/Disable an employee account."""
+        user = self.get_object()
+        user_role = request.user.role
         
+        # Owners can toggle anyone. Managers can toggle Techs/Users.
+        if user_role == 'COMPANY_OWNER' or (user_role == 'MANAGER' and user.role in ['TECHNICIAN', 'USER']):
+            user.is_active = not user.is_active
+            user.save()
+            status_str = "activated" if user.is_active else "deactivated"
+            return Response({"message": f"User account has been {status_str}."}, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+class ManagerViewSet(BaseUserViewSet):
+    """ViewSet for Owner to manage Managers."""
+    def get_queryset(self):
+        return User.objects.filter(company=self.request.user.company, role='MANAGER')
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'COMPANY_OWNER':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Company Owners can add Managers.")
+        serializer.save(role='MANAGER')
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        response.data['message'] = "Manager account created successfully."
+        return response
+
+class EmployeeViewSet(BaseUserViewSet):
+    """ViewSet for Managers/Owners to manage Technicians and standard Users."""
+    def get_queryset(self):
+        return User.objects.filter(
+            company=self.request.user.company, 
+            role__in=['TECHNICIAN', 'USER']
+        )
+
+    def perform_create(self, serializer):
+        if self.request.user.role not in ['COMPANY_OWNER', 'MANAGER']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Owners or Managers can add employees.")
+        
+        target_role = serializer.validated_data.get('role', 'USER')
+        if target_role not in ['TECHNICIAN', 'USER']:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"role": "This endpoint is for Technicians and Users only."})
+            
         serializer.save()
 
     def create(self, request, *args, **kwargs):

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 from .models import Company
@@ -9,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'full_name', 'email', 'role', 'is_active', 'created_at')
-        read_only_fields = ('id', 'created_at', 'is_active')
+        read_only_fields = ('id', 'created_at')
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -66,3 +67,17 @@ class CompanySerializer(serializers.ModelSerializer):
         model = Company
         fields = ('id', 'name', 'created_at')
         read_only_fields = ('id', 'created_at')
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Add extra responses
+        data['user'] = {
+            'id': self.user.id,
+            'full_name': self.user.full_name,
+            'email': self.user.email,
+            'role': self.user.role,
+        }
+        
+        return data
