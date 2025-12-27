@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import api from "../services/api";
+import authService from "../services/authService";
 
 const AuthContext = createContext(null);
 
@@ -11,9 +11,19 @@ export const AuthProvider = ({ children }) => {
     // Check for stored token on mount
     const initAuth = async () => {
       const token = localStorage.getItem("token");
-      const storedUser = localStorage.getItem("user");
-      if (token && storedUser) {
-        setUser(JSON.parse(storedUser));
+      if (token) {
+        try {
+          const user = await authService.getCurrentUser();
+          setUser(user);
+          localStorage.setItem("user", JSON.stringify(user));
+        } catch (error) {
+          console.error("Failed to fetch user on init:", error);
+          // If fetching user fails (e.g., token expired), logout
+          localStorage.removeItem("token");
+          localStorage.removeItem("refresh");
+          localStorage.removeItem("user");
+          setUser(null);
+        }
       }
       setLoading(false);
     };
@@ -22,9 +32,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.auth.login({ email, password });
-      const { token, user } = response;
+      const response = await authService.login(email, password);
+
+      const token = response.access || response.access_token || response.token;
+      const refresh = response.refresh || response.refresh_token;
+
       localStorage.setItem("token", token);
+      if (refresh) localStorage.setItem("refresh", refresh);
+
+      // Fetch user details
+      const user = await authService.getCurrentUser();
+
       localStorage.setItem("user", JSON.stringify(user));
       setUser(user);
       return user;
@@ -36,6 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     localStorage.removeItem("user");
     setUser(null);
   };

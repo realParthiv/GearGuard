@@ -2,37 +2,6 @@ import axios from "axios";
 
 // --- MOCK DATA ---
 
-const USERS = [
-  {
-    id: 1,
-    name: "Admin User",
-    email: "admin@gearguard.com",
-    role: "ADMIN",
-    avatar: "https://i.pravatar.cc/150?u=admin",
-  },
-  {
-    id: 2,
-    name: "Manager User",
-    email: "manager@gearguard.com",
-    role: "MANAGER",
-    avatar: "https://i.pravatar.cc/150?u=manager",
-  },
-  {
-    id: 3,
-    name: "Tech User",
-    email: "tech@gearguard.com",
-    role: "TECHNICIAN",
-    avatar: "https://i.pravatar.cc/150?u=tech",
-  },
-  {
-    id: 4,
-    name: "Regular User",
-    email: "user@gearguard.com",
-    role: "USER",
-    avatar: "https://i.pravatar.cc/150?u=user",
-  },
-];
-
 const EQUIPMENT = [
   {
     id: 1,
@@ -122,23 +91,6 @@ const REQUESTS = [
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const api = {
-  auth: {
-    login: async (credentials) => {
-      await delay(500);
-      const user = USERS.find((u) => u.email === credentials.email);
-      if (user) {
-        // Mock token
-        return { token: "mock-jwt-token-123", user };
-      }
-      throw new Error("Invalid credentials");
-    },
-    me: async () => {
-      await delay(300);
-      // For simplicity, just return the first user or simulate based on stored token if we implemented that logic fully
-      // Here we assume the caller handles the context
-      return USERS[0];
-    },
-  },
   equipment: {
     getAll: async () => {
       await delay(500);
